@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
 export const revalidate = 86400;
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   let db: Database.Database | null = null;
