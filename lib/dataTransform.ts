@@ -79,13 +79,15 @@ export interface GameData {
   player_white: string[];
   player_black: string[];
   result: string[];
-  notation: string[];
+  notation?: string[];
   date: number[];
   komi: number[];
   size: number[];
   rating_white: number[];
   rating_black: number[];
   tournament: number[];
+  pieces?: number[];
+  capstones?: number[];
   moves?: number[];
   BotGame?: string[];
   date_formatted?: string[];
@@ -116,6 +118,27 @@ export function calculateMoves(notation: string): number {
   if (!notation) return 0;
   const moveCount = (notation.match(/,/g) || []).length + 1;
   return Math.round(moveCount / 2);
+}
+
+/**
+ * Calculate moves from either full notation or slim database counters.
+ */
+export function calculateGameMoves(game: any): number {
+  if (typeof game.moves === 'number' && game.moves >= 0) {
+    return game.moves;
+  }
+
+  if (typeof game.notation === 'string' && game.notation.length > 0) {
+    return calculateMoves(game.notation);
+  }
+
+  if (typeof game.pieces === 'number' || typeof game.capstones === 'number') {
+    const pieces = game.pieces > 0 ? game.pieces : 0;
+    const capstones = game.capstones > 0 ? game.capstones : 0;
+    return pieces + capstones;
+  }
+
+  return 0;
 }
 
 /**
@@ -173,7 +196,7 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
       return true;
     })
     .map((game) => {
-      const moves = calculateMoves(game.notation || '');
+      const moves = calculateGameMoves(game);
       
       // Filter out games with too few moves
       if (moves < game.size + 1) {

@@ -6,13 +6,16 @@ export interface GameRecord {
   player_white: string;
   player_black: string;
   result: string;
-  notation: string;
+  notation?: string;
   date: number;
   komi: number;
   size: number;
   rating_white: number;
   rating_black: number;
   tournament: number;
+  pieces?: number;
+  capstones?: number;
+  moves?: number;
 }
 
 export interface ApiGamesResponse {
@@ -44,14 +47,13 @@ export async function fetchGames(
     
     if (data.error) {
       console.warn('Database warning:', data.error);
-      // Fall through to sample data
-      return [];
+      throw new Error(data.error);
     }
     
     return data.games || [];
   } catch (error) {
     console.error('Failed to fetch games:', error);
-    return [];
+    throw error;
   }
 }
 
