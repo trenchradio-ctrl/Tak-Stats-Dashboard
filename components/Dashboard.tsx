@@ -241,7 +241,7 @@ export default function Dashboard() {
 
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h2 className="text-lg font-semibold mb-4">Games Over Time</h2>
-                <TimeSeriesChart games={filteredGames} />
+                <TimeSeriesChart games={filteredGames} dateRange={filters.dateRange} />
               </div>
             </>
           )}
