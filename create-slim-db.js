@@ -1,17 +1,32 @@
 const Database = require('better-sqlite3');
 const fs = require('fs');
+const path = require('path');
 
-console.log('Creating slim database without notation column...\n');
+const sourcePath = process.argv[2] || './public/games.db';
+const outputPath = process.argv[3] || './public/games_slim.db';
+
+console.log('Creating slim database without notation column, preserving derived moves...\n');
+
+function calculateMoves(notation) {
+  if (!notation) return null;
+  const tokens = notation.split(',').filter((token) => token.trim().length > 0);
+  if (tokens.length === 0) return null;
+  return Math.round(tokens.length / 2);
+}
 
 // Open original database
-const originalDb = new Database('./public/games.db', { readonly: true });
+const originalDb = new Database(sourcePath, { readonly: true });
 
 // Check original size
-const originalSize = fs.statSync('./public/games.db').size;
+const originalSize = fs.statSync(sourcePath).size;
 console.log(`Original database size: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
 
 // Create new database without notation
-const slimDb = new Database('./public/games_slim.db');
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+if (fs.existsSync(outputPath)) {
+  fs.unlinkSync(outputPath);
+}
+const slimDb = new Database(outputPath);
 
 // Get the schema (without notation column)
 const schema = originalDb.prepare(`
@@ -25,6 +40,7 @@ console.log('Creating new table without notation column...');
 let modifiedSchema = schema.sql;
 modifiedSchema = modifiedSchema.replace(/,\s*notation\s+TEXT/i, '');
 modifiedSchema = modifiedSchema.replace(/\s+notation\s+TEXT/i, '');
+modifiedSchema = modifiedSchema.replace(/\)$/, ', moves INTEGER)');
 
 // Create table in new database
 try {
@@ -32,29 +48,48 @@ try {
 } catch(e) {}
 slimDb.exec(modifiedSchema);
 
-// Copy data without notation column
-const columns = originalDb.pragma('table_info(games)').map(col => col.name).filter(col => col !== 'notation');
-const columnList = columns.join(', ');
-const placeholders = columns.map(() => '?').join(', ');
+// Copy data without notation column, adding derived moves from notation.
+const sourceColumns = originalDb.pragma('table_info(games)').map(col => col.name);
+const hasNotation = sourceColumns.includes('notation');
+const columns = sourceColumns.filter(col => col !== 'notation' && col !== 'moves');
+const outputColumns = [...columns, 'moves'];
+const columnList = outputColumns.join(', ');
+const placeholders = outputColumns.map(() => '?').join(', ');
 
 const totalGames = originalDb.prepare('SELECT COUNT(*) as count FROM games').get().count;
 console.log(`Copying ${totalGames.toLocaleString()} games...`);
 
 const insertStmt = slimDb.prepare(`INSERT INTO games (${columnList}) VALUES (${placeholders})`);
-const selectStmt = originalDb.prepare(`SELECT ${columnList} FROM games`);
+const selectColumns = hasNotation ? [...columns, 'notation'] : columns;
+const selectStmt = originalDb.prepare(`SELECT ${selectColumns.join(', ')} FROM games`);
 
 const transaction = slimDb.transaction((rows) => {
   for (const row of rows) {
-    insertStmt.run(...Object.values(row));
+    const moves = hasNotation ? calculateMoves(row.notation) : (row.moves ?? null);
+    const values = columns.map((column) => row[column]);
+    insertStmt.run(...values, moves);
   }
 });
 
 const batchSize = 10000;
 let copied = 0;
+let batch = [];
 
-const allRows = selectStmt.all();
-transaction(allRows);
-copied = allRows.length;
+for (const row of selectStmt.iterate()) {
+  batch.push(row);
+
+  if (batch.length === batchSize) {
+    transaction(batch);
+    copied += batch.length;
+    console.log(`  Copied ${copied.toLocaleString()} / ${totalGames.toLocaleString()}`);
+    batch = [];
+  }
+}
+
+if (batch.length > 0) {
+  transaction(batch);
+  copied += batch.length;
+}
 
 console.log(`Copied ${copied.toLocaleString()} games\n`);
 
@@ -74,7 +109,7 @@ for (const index of indexes) {
 }
 
 // Get final sizes
-const slimSize = fs.statSync('./public/games_slim.db').size;
+const slimSize = fs.statSync(outputPath).size;
 console.log(`Original database: ${(originalSize / 1024 / 1024).toFixed(2)} MB`);
 console.log(`Slim database:     ${(slimSize / 1024 / 1024).toFixed(2)} MB`);
 console.log(`Size reduction:    ${((1 - slimSize / originalSize) * 100).toFixed(1)}%\n`);

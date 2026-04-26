@@ -53,11 +53,16 @@ export default function Dashboard() {
           setFilteredGames([]);
           setStats(null);
         } else {
-          const dates = transformed.map((game) => game.date).filter((date) => Number.isFinite(date));
-          const nextDateBounds: [number, number] = [
-            Math.min(...dates),
-            Math.max(...dates),
-          ];
+          let minDate = Number.POSITIVE_INFINITY;
+          let maxDate = Number.NEGATIVE_INFINITY;
+
+          for (const game of transformed) {
+            if (!Number.isFinite(game.date)) continue;
+            if (game.date < minDate) minDate = game.date;
+            if (game.date > maxDate) maxDate = game.date;
+          }
+
+          const nextDateBounds: [number, number] = [minDate, maxDate];
 
           setDateBounds(nextDateBounds);
           setFilters((prev) => ({

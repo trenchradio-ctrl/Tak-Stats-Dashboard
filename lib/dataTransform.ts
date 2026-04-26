@@ -171,7 +171,6 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
   
   let anonRemoved = 0;
   let drawsRemoved = 0;
-  let lowMovesRemoved = 0;
   let successCount = 0;
 
   const result = rawGames
@@ -190,12 +189,6 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
     })
     .map((game) => {
       const moves = calculateGameMoves(game);
-      
-      // Filter out games with too few moves only when move data is available.
-      if (moves !== null && moves < game.size + 1) {
-        lowMovesRemoved++;
-        return null;
-      }
 
       successCount++;
       return {
@@ -217,7 +210,7 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
     })
     .filter((game): game is TransformedGame => game !== null);
 
-  console.log(`Transform complete: ${successCount} games kept, ${anonRemoved} anon removed, ${drawsRemoved} draws removed, ${lowMovesRemoved} low moves removed`);
+  console.log(`Transform complete: ${successCount} games kept, ${anonRemoved} anon removed, ${drawsRemoved} draws removed`);
   
   return result;
 }
