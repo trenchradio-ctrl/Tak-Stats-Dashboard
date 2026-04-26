@@ -143,6 +143,8 @@ export async function GET(request: NextRequest) {
       { 
         error: error.message || 'Database error',
         games: [],
+        cwd: process.cwd(),
+        triedPaths: diagnostics,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       },
       { status: 200 }

@@ -13,19 +13,10 @@ const columns = [
   'player_white',
   'player_black',
   'result',
-  'timertime',
-  'timerinc',
   'rating_white',
   'rating_black',
-  'unrated',
   'tournament',
   'komi',
-  'pieces',
-  'capstones',
-  'rating_change_white',
-  'rating_change_black',
-  'extra_time_amount',
-  'extra_time_trigger',
   'moves',
 ];
 
@@ -67,19 +58,10 @@ async function main() {
       player_white TEXT,
       player_black TEXT,
       result TEXT,
-      timertime INTEGER,
-      timerinc INTEGER,
       rating_white INTEGER,
       rating_black INTEGER,
-      unrated INTEGER,
       tournament INTEGER,
       komi INTEGER,
-      pieces INTEGER,
-      capstones INTEGER,
-      rating_change_white INTEGER,
-      rating_change_black INTEGER,
-      extra_time_amount INTEGER,
-      extra_time_trigger INTEGER,
       moves INTEGER
     );
   `);
@@ -111,11 +93,8 @@ async function main() {
     page += 1;
   }
 
-  db.exec(`
-    CREATE INDEX idx_games_date ON games(date);
-    CREATE INDEX idx_games_players ON games(player_white, player_black);
-    CREATE INDEX idx_games_result ON games(result);
-  `);
+  db.pragma('journal_mode = DELETE');
+  db.exec('VACUUM');
   db.close();
 
   for (const suffix of ['', '-wal', '-shm']) {
