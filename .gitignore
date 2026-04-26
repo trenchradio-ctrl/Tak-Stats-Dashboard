@@ -35,3 +35,5 @@ next-env.d.ts
 
 # BUT DO include the database file for deployment
 !public/games.db
+*.db-shm
+*.db-wal
