@@ -7,6 +7,7 @@ import {
   LinearScale,
   LineElement,
   PointElement,
+  Filler,
   Title,
   Tooltip,
   Legend,
@@ -14,7 +15,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import { TransformedGame } from '@/lib/dataTransform';
 
-ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Filler, Title, Tooltip, Legend);
 
 interface TimeSeriesChartProps {
   games: TransformedGame[];
@@ -42,6 +43,12 @@ function startOfMonth(timestamp: number): Date {
   return date;
 }
 
+function getBucketEnd(date: Date, bucket: 'day' | 'week' | 'month'): Date {
+  const end = addBucket(date, bucket);
+  end.setMilliseconds(end.getMilliseconds() - 1);
+  return end;
+}
+
 function addBucket(date: Date, bucket: 'day' | 'week' | 'month'): Date {
   const next = new Date(date);
 
@@ -62,8 +69,12 @@ function getBucketStart(timestamp: number, bucket: 'day' | 'week' | 'month'): Da
   return startOfMonth(timestamp);
 }
 
-function formatBucketLabel(date: Date, bucket: 'day' | 'week' | 'month'): string {
+function formatBucketLabel(date: Date, bucket: 'day' | 'week' | 'month', selectedEnd?: number): string {
   if (bucket === 'month') {
+    if (selectedEnd && date.getTime() <= selectedEnd && selectedEnd <= getBucketEnd(date, bucket).getTime()) {
+      return new Date(selectedEnd).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    }
+
     return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
   }
 
@@ -89,8 +100,10 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
             borderColor: '#0ea5e9',
             borderWidth: 2,
             tension: 0.25,
-            pointRadius: 0,
+            pointRadius: 2,
+            pointHitRadius: 16,
             pointHoverRadius: 4,
+            fill: true,
           },
         ],
       };
@@ -107,7 +120,7 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
     for (let date = firstBucket; date <= lastBucket; date = addBucket(date, bucket)) {
       const key = date.toISOString();
       keys.push(key);
-      labels.push(formatBucketLabel(date, bucket));
+      labels.push(formatBucketLabel(date, bucket, end));
       gamesByBucket[key] = 0;
     }
 
@@ -126,8 +139,10 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
           borderColor: '#0ea5e9',
           borderWidth: 2,
           tension: 0.25,
-          pointRadius: 0,
-          pointHoverRadius: 4,
+          pointRadius: keys.length > 120 ? 0 : 2,
+          pointHitRadius: 16,
+          pointHoverRadius: 5,
+          fill: true,
         },
       ],
     };
@@ -141,6 +156,9 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
         display: false,
       },
       tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#fff',
         bodyColor: '#fff',
@@ -148,7 +166,15 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
         borderWidth: 1,
         padding: 8,
         displayColors: false,
+        callbacks: {
+          label: (context: any) => `${context.parsed.y.toLocaleString()} games`,
+        },
       },
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false,
     },
     scales: {
       x: {
