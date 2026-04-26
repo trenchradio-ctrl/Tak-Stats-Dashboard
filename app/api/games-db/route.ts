@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       .all()
       .map((column: any) => column.name);
     const hasNotation = columns.includes('notation');
-    const hasSlimMoveColumns = columns.includes('pieces') && columns.includes('capstones');
+    const hasMoves = columns.includes('moves');
 
     // Fetch games from the database - load all games (with optional pagination)
     const offset = request.nextUrl.searchParams.get('offset') || '0';
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         rating_black,
         tournament
         ${hasNotation ? ', notation' : ''}
-        ${hasSlimMoveColumns ? ', pieces, capstones, (COALESCE(NULLIF(pieces, -1), 0) + COALESCE(NULLIF(capstones, -1), 0)) AS moves' : ''}
+        ${hasMoves ? ', moves' : ''}
       FROM games
       LIMIT ? OFFSET ?
     `

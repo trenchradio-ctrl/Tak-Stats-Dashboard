@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="title">
+  <title id="title">PlayTak logo</title>
+  <g fill="#fff">
+    <text x="18" y="190" font-family="Arial Black, Impact, sans-serif" font-size="185" font-weight="900">PLAY</text>
+    <text x="18" y="385" font-family="Arial Black, Impact, sans-serif" font-size="185" font-weight="900">TAK</text>
+    <polygon points="66,96 66,152 122,124"/>
+  </g>
+  <g transform="translate(635 38)" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round">
+    <ellipse cx="82" cy="24" rx="58" ry="18"/>
+    <path d="M27 38C6 55-6 82 3 104l36 84c29 9 57 13 86 8 29-5 51-12 65-20l35-76c9-22-5-46-28-62-34 9-132 12-170 0z"/>
+    <path d="M38 188c41 15 102 14 145-6l16 28c-51 24-119 25-176 2z" fill="#000"/>
+    <path d="M27 216c-30 18-37 51-20 75 46 31 125 42 193 16 31-22 34-59 4-86-52 24-120 25-177-5z" fill="#000"/>
+    <path d="M14 292c-11 49 22 76 91 86 45 6 94 0 122-18 23-18 24-51 9-78-66 31-151 36-222 10z" fill="#000"/>
+  </g>
+  <g transform="translate(585 275)" fill="#fff" stroke="#000" stroke-width="5" stroke-linejoin="round">
+    <polygon points="0,70 160,10 315,58 156,136"/>
+    <polygon points="0,70 156,136 156,190 0,138"/>
+    <polygon points="156,136 315,58 315,112 156,190"/>
+    <polygon points="24,152 155,198 305,132 305,185 155,250 24,206"/>
+    <polygon points="24,206 155,250 155,300 24,255"/>
+    <polygon points="155,250 305,185 305,235 155,300"/>
+  </g>
+  <text x="570" y="408" fill="#fff" font-family="Arial, sans-serif" font-size="50" transform="rotate(18 570 408)">.com</text>
+</svg>

@@ -184,9 +184,9 @@ export default function Dashboard() {
                 />
                 <div className="flex items-center justify-center">
                   <img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='white' stroke='black' stroke-width='2'/%3E%3Crect x='25' y='25' width='50' height='50' fill='black'/%3E%3C/svg%3E"
+                    src="/playtak-logo.svg"
                     alt="PlayTak Logo"
-                    className="w-12 h-12"
+                    className="h-20 w-full max-w-40 object-contain"
                   />
                 </div>
               </div>

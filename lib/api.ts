@@ -13,8 +13,6 @@ export interface GameRecord {
   rating_white: number;
   rating_black: number;
   tournament: number;
-  pieces?: number;
-  capstones?: number;
   moves?: number;
 }
 

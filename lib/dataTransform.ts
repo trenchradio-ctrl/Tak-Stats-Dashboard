@@ -86,8 +86,6 @@ export interface GameData {
   rating_white: number[];
   rating_black: number[];
   tournament: number[];
-  pieces?: number[];
-  capstones?: number[];
   moves?: number[];
   BotGame?: string[];
   date_formatted?: string[];
@@ -121,9 +119,10 @@ export function calculateMoves(notation: string): number {
 }
 
 /**
- * Calculate moves from either full notation or slim database counters.
+ * Calculate moves from full notation or an explicit moves column.
+ * Slim databases without notation cannot provide move counts.
  */
-export function calculateGameMoves(game: any): number {
+export function calculateGameMoves(game: any): number | null {
   if (typeof game.moves === 'number' && game.moves >= 0) {
     return game.moves;
   }
@@ -132,13 +131,7 @@ export function calculateGameMoves(game: any): number {
     return calculateMoves(game.notation);
   }
 
-  if (typeof game.pieces === 'number' || typeof game.capstones === 'number') {
-    const pieces = game.pieces > 0 ? game.pieces : 0;
-    const capstones = game.capstones > 0 ? game.capstones : 0;
-    return pieces + capstones;
-  }
-
-  return 0;
+  return null;
 }
 
 /**
@@ -198,8 +191,8 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
     .map((game) => {
       const moves = calculateGameMoves(game);
       
-      // Filter out games with too few moves
-      if (moves < game.size + 1) {
+      // Filter out games with too few moves only when move data is available.
+      if (moves !== null && moves < game.size + 1) {
         lowMovesRemoved++;
         return null;
       }
@@ -217,7 +210,7 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
         rating_white: game.rating_white,
         rating_black: game.rating_black,
         tournament: game.tournament === 1 ? 'Tournament' : (game.tournament === 0 ? 'Normal' : game.tournament),
-        moves,
+        moves: moves ?? 0,
         BotGame: getGameType(game.player_white, game.player_black),
         rating_difference: Math.abs(game.rating_white - game.rating_black),
       };
@@ -312,6 +305,7 @@ export function calculateStats(games: TransformedGame[]): GameStats {
   let blackWins = 0;
   let draws = 0;
   let totalMoves = 0;
+  let gamesWithMoves = 0;
   let roadWins = 0;
   let flatWins = 0;
 
@@ -322,7 +316,10 @@ export function calculateStats(games: TransformedGame[]): GameStats {
     if (bw) blackWins++;
     if (isDraw) draws++;
 
-    totalMoves += game.moves;
+    if (game.moves > 0) {
+      totalMoves += game.moves;
+      gamesWithMoves++;
+    }
 
     // Determine if win is by road or flat
     // Result formats: "R-0" (road white), "0-R" (road black), "F-0" (flat white), "0-F" (flat black)
@@ -348,7 +345,7 @@ export function calculateStats(games: TransformedGame[]): GameStats {
     whiteWinPercentage: ((whiteWins / totalGames) * 100).toFixed(2) as any,
     blackWinPercentage: ((blackWins / totalGames) * 100).toFixed(2) as any,
     drawPercentage: ((draws / totalGames) * 100).toFixed(2) as any,
-    avgMoves: (totalMoves / totalGames).toFixed(1) as any,
+    avgMoves: gamesWithMoves > 0 ? (totalMoves / gamesWithMoves).toFixed(1) as any : 'N/A' as any,
     roadWinPercentage: roadWinPercentage as any,
     flatWinPercentage: flatWinPercentage as any,
   };
