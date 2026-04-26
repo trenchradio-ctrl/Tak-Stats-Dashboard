@@ -1,36 +1,70 @@
 import Database from 'better-sqlite3';
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
 import path from 'path';
 
 export const revalidate = 86400;
 export const runtime = 'nodejs';
 
+function getCandidateDbPaths() {
+  const cwd = process.cwd();
+  const envPath = process.env.GAMES_DB_PATH;
+  const candidates = [
+    envPath,
+    path.join(cwd, 'public', 'games.db'),
+    path.join(cwd, 'public', 'games_slim.db'),
+    path.join(cwd, 'games.db'),
+    path.join(cwd, 'games_slim.db'),
+    path.join(cwd, '.next', 'server', 'public', 'games.db'),
+    path.join(cwd, '.next', 'server', 'app', 'api', 'games-db', 'public', 'games.db'),
+    path.join(cwd, '.next', 'standalone', 'public', 'games.db'),
+    'd:\\Social Media\\Analytics Tool\\games_slim.db',
+    'd:\\Social Media\\Analytics Tool\\games.db',
+    'd:\\Social Media\\Analytics Tool\\Tak Games DB.db',
+  ];
+
+  return [...new Set(candidates.filter((candidate): candidate is string => Boolean(candidate)))];
+}
+
 export async function GET(request: NextRequest) {
   let db: Database.Database | null = null;
+  const diagnostics: Array<{
+    path: string;
+    exists: boolean;
+    size?: number;
+    error?: string;
+  }> = [];
 
   try {
-    // Prefer the slim database. If it has been renamed for deployment, games.db
-    // may still contain the slim schema.
-    const dbPaths = [
-      path.join(process.cwd(), 'public', 'games_slim.db'),
-      path.join(process.cwd(), 'public', 'games.db'),
-      path.join(process.cwd(), 'games_slim.db'),
-      path.join(process.cwd(), 'games.db'),
-      'd:\\Social Media\\Analytics Tool\\games_slim.db',
-      'd:\\Social Media\\Analytics Tool\\games.db',
-      'd:\\Social Media\\Analytics Tool\\Tak Games DB.db',
-    ];
+    const dbPaths = getCandidateDbPaths();
 
     let dbPath = '';
 
-    // Find the first database that exists
     for (const tryPath of dbPaths) {
       try {
-        db = new Database(tryPath, { readonly: true });
+        const stat = fs.existsSync(tryPath) ? fs.statSync(tryPath) : null;
+        const diagnostic = {
+          path: tryPath,
+          exists: Boolean(stat),
+          size: stat?.size,
+        };
+
+        if (!stat) {
+          diagnostics.push(diagnostic);
+          continue;
+        }
+
+        db = new Database(tryPath, { readonly: true, fileMustExist: true });
         dbPath = tryPath;
         console.log(`Connected to database at: ${tryPath}`);
         break;
-      } catch (e) {
+      } catch (e: any) {
+        diagnostics.push({
+          path: tryPath,
+          exists: fs.existsSync(tryPath),
+          size: fs.existsSync(tryPath) ? fs.statSync(tryPath).size : undefined,
+          error: e.message,
+        });
         db?.close();
         continue;
       }
@@ -43,7 +77,8 @@ export async function GET(request: NextRequest) {
           error: 'Database not found',
           message: 'Copy your games.db file to the public/ folder',
           games: [],
-          triedPaths: dbPaths,
+          cwd: process.cwd(),
+          triedPaths: diagnostics,
         },
         { status: 200 }
       );
