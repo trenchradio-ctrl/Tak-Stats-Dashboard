@@ -13,12 +13,14 @@ export default function Dashboard() {
   const [stats, setStats] = useState<GameStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dateBounds, setDateBounds] = useState<[number, number] | null>(null);
 
   const [filters, setFilters] = useState({
     sizes: [] as number[],
     komis: [] as number[],
     gameTypes: [] as string[],
     tournament: [] as string[],
+    dateRange: [0, Number.MAX_SAFE_INTEGER] as [number, number],
     ratingDiffRange: [0, 2500] as [number, number],
     whiteRatingRange: [0, 3000] as [number, number],
     blackRatingRange: [0, 3000] as [number, number],
@@ -51,6 +53,17 @@ export default function Dashboard() {
           setFilteredGames([]);
           setStats(null);
         } else {
+          const dates = transformed.map((game) => game.date).filter((date) => Number.isFinite(date));
+          const nextDateBounds: [number, number] = [
+            Math.min(...dates),
+            Math.max(...dates),
+          ];
+
+          setDateBounds(nextDateBounds);
+          setFilters((prev) => ({
+            ...prev,
+            dateRange: nextDateBounds,
+          }));
           setGames(transformed);
           setFilteredGames(transformed);
           setStats(calculateStats(transformed));
@@ -73,6 +86,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     let filtered = games;
+
+    filtered = filtered.filter(
+      (g) =>
+        g.date >= filters.dateRange[0] &&
+        g.date <= filters.dateRange[1]
+    );
 
     if (filters.sizes.length > 0) {
       filtered = filtered.filter((g) => filters.sizes.includes(g.size));
@@ -147,7 +166,7 @@ export default function Dashboard() {
       )}
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 bg-gray-800 border-r border-gray-700 overflow-y-auto flex-shrink-0">
-          <Filters filters={filters} setFilters={setFilters} />
+          <Filters filters={filters} dateBounds={dateBounds} setFilters={setFilters} />
         </div>
 
         <div className="flex-1 p-8 overflow-y-auto pb-24">
@@ -184,7 +203,7 @@ export default function Dashboard() {
                 />
                 <div className="flex items-center justify-center">
                   <img
-                    src="/playtak-logo.svg"
+                    src="/playtak-logo.png"
                     alt="PlayTak Logo"
                     className="h-20 w-full max-w-40 object-contain"
                   />

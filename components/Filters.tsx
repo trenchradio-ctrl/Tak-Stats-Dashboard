@@ -8,16 +8,42 @@ interface FilterProps {
     komis: number[];
     gameTypes: string[];
     tournament: string[];
+    dateRange: [number, number];
     ratingDiffRange: [number, number];
     whiteRatingRange: [number, number];
     blackRatingRange: [number, number];
     timeControlMin: number;
     timeControlMax: number;
   };
+  dateBounds: [number, number] | null;
   setFilters: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export default function Filters({ filters, setFilters }: FilterProps) {
+function toDateInputValue(timestamp: number): string {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return '';
+
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function fromDateInputValue(value: string, endOfDay = false): number {
+  if (!value) return 0;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (endOfDay) {
+    date.setHours(23, 59, 59, 999);
+  }
+
+  return date.getTime();
+}
+
+export default function Filters({ filters, dateBounds, setFilters }: FilterProps) {
   const handleSizeToggle = (size: number) => {
     setFilters((prev: any) => ({
       ...prev,
@@ -76,6 +102,48 @@ export default function Filters({ filters, setFilters }: FilterProps) {
 
   return (
     <div className="p-4 space-y-6">
+      {dateBounds && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-300 mb-3">Date Range</h3>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="block text-xs text-gray-500 mb-1">From</span>
+              <input
+                type="date"
+                min={toDateInputValue(dateBounds[0])}
+                max={toDateInputValue(filters.dateRange[1])}
+                value={toDateInputValue(filters.dateRange[0])}
+                onChange={(e) => {
+                  const nextStart = fromDateInputValue(e.target.value);
+                  setFilters((prev: any) => ({
+                    ...prev,
+                    dateRange: [Math.min(nextStart, prev.dateRange[1]), prev.dateRange[1]],
+                  }));
+                }}
+                className="w-full rounded bg-gray-900 border border-gray-700 px-2 py-1 text-sm text-gray-200"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs text-gray-500 mb-1">To</span>
+              <input
+                type="date"
+                min={toDateInputValue(filters.dateRange[0])}
+                max={toDateInputValue(dateBounds[1])}
+                value={toDateInputValue(filters.dateRange[1])}
+                onChange={(e) => {
+                  const nextEnd = fromDateInputValue(e.target.value, true);
+                  setFilters((prev: any) => ({
+                    ...prev,
+                    dateRange: [prev.dateRange[0], Math.max(nextEnd, prev.dateRange[0])],
+                  }));
+                }}
+                className="w-full rounded bg-gray-900 border border-gray-700 px-2 py-1 text-sm text-gray-200"
+              />
+            </label>
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Size</h3>
         <div className="space-y-2">
