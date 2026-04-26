@@ -210,6 +210,9 @@ export default function Dashboard() {
                   <img
                     src="/playtak-logo.png"
                     alt="PlayTak Logo"
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none';
+                    }}
                     className="h-20 w-full max-w-40 object-contain"
                   />
                 </div>

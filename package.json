@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "update-db": "node update-slim-db.js",
     "lint": "next lint"
   },
   "dependencies": {
