@@ -205,7 +205,7 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
   };
 
   return (
-    <div className="h-96">
+    <div className="h-72 md:h-96">
       <Line data={chartData} options={options as any} />
     </div>
   );

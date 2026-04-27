@@ -168,16 +168,16 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
+    <div className="flex min-h-screen flex-col bg-gray-900 text-white md:h-screen">
       {games.length > 0 && (
-        <div className="bg-green-900 border-b border-green-700 p-4 flex-shrink-0">
+        <div className="bg-green-900 border-b border-green-700 p-3 md:p-4 flex-shrink-0">
           <p className="text-white text-sm">
             Loaded {games.length.toLocaleString()} games from the slim database (after filtering)
           </p>
         </div>
       )}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-64 bg-gray-800 border-r border-gray-700 overflow-y-auto flex-shrink-0">
+      <div className="flex flex-1 flex-col overflow-visible md:flex-row md:overflow-hidden">
+        <div className="max-h-[42vh] w-full flex-shrink-0 overflow-y-auto border-b border-gray-700 bg-gray-800 md:max-h-none md:w-64 md:border-b-0 md:border-r">
           <Filters
             filters={filters}
             dateBounds={dateBounds}
@@ -186,7 +186,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="flex-1 p-8 overflow-y-auto pb-24">
+        <div className="flex-1 overflow-y-auto p-4 pb-12 md:p-8 md:pb-24">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -197,7 +197,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-5 gap-4 mb-8">
+              <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:mb-8 md:grid-cols-5 md:gap-4">
                 <StatCard
                   label="# of Games"
                   value={stats?.totalGames.toLocaleString() || '0'}
@@ -223,7 +223,7 @@ export default function Dashboard() {
                     href="https://playtak.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-20 w-full max-w-40 items-center justify-center text-sm font-semibold text-gray-200 hover:text-sky-300"
+                    className="flex h-16 w-full max-w-40 items-center justify-center text-sm font-semibold text-gray-200 hover:text-sky-300 md:h-20"
                     aria-label="Open PlayTak"
                   >
                     {logoLoaded ? (
@@ -240,7 +240,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 md:mb-8 md:gap-4">
                 <StatCard
                   label="Road Win %"
                   value={`${stats?.roadWinPercentage}%` || '0%'}
@@ -261,7 +261,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 md:p-6">
                 <h2 className="text-lg font-semibold mb-4">Games Over Time</h2>
                 <TimeSeriesChart games={filteredGames} dateRange={filters.dateRange} />
               </div>

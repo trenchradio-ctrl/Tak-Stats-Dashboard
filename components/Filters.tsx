@@ -166,7 +166,7 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
   };
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="grid gap-5 p-4 sm:grid-cols-2 lg:grid-cols-3 md:block md:space-y-6">
       {dateBounds && (
         <div>
           <h3 className="text-sm font-semibold text-gray-300 mb-3">Date Range</h3>
@@ -211,7 +211,7 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Size</h3>
-        <div className="space-y-2">
+        <div className="grid grid-cols-3 gap-2 md:block md:space-y-2">
           {[3, 4, 5, 6, 7, 8].map((size) => (
             <label key={size} className="flex items-center cursor-pointer">
               <input
@@ -229,7 +229,7 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Type</h3>
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2 md:block md:space-y-2">
           {['Tournament', 'Normal'].map((type) => (
             <label key={type} className="flex items-center cursor-pointer">
               <input
@@ -247,7 +247,7 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
       {availableKomis.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-gray-300 mb-3">Komi</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2 md:grid-cols-2">
             {availableKomis.map((komi) => (
               <label key={komi} className="flex items-center cursor-pointer">
                 <input
@@ -309,7 +309,7 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Games</h3>
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-2 md:block md:space-y-2">
           {['Human', 'Bot'].map((type) => (
             <label key={type} className="flex items-center cursor-pointer">
               <input
