@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { fetchGames } from '@/lib/api';
 import { transformGamesData, calculateStats, TransformedGame, GameStats } from '@/lib/dataTransform';
 import StatCard from './StatCard';
@@ -21,12 +21,18 @@ export default function Dashboard() {
     gameTypes: [] as string[],
     tournament: [] as string[],
     dateRange: [0, Number.MAX_SAFE_INTEGER] as [number, number],
-    ratingDiffRange: [0, 2500] as [number, number],
+    ratingDiffRange: [0, 3000] as [number, number],
     whiteRatingRange: [0, 3000] as [number, number],
     blackRatingRange: [0, 3000] as [number, number],
     timeControlMin: 0,
-    timeControlMax: 10000,
+    timeControlMax: 60000,
   });
+
+  const availableKomis = useMemo(() => {
+    return [...new Set(games.map((game) => game.komi))]
+      .filter((komi) => Number.isFinite(komi))
+      .sort((a, b) => a - b);
+  }, [games]);
 
   useEffect(() => {
     const loadGames = async () => {
@@ -134,7 +140,7 @@ export default function Dashboard() {
 
     filtered = filtered.filter(
       (g) =>
-        g.moves >= filters.timeControlMin && g.moves <= filters.timeControlMax
+        g.time_control >= filters.timeControlMin && g.time_control <= filters.timeControlMax
     );
 
     setFilteredGames(filtered);
@@ -171,7 +177,12 @@ export default function Dashboard() {
       )}
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 bg-gray-800 border-r border-gray-700 overflow-y-auto flex-shrink-0">
-          <Filters filters={filters} dateBounds={dateBounds} setFilters={setFilters} />
+          <Filters
+            filters={filters}
+            dateBounds={dateBounds}
+            availableKomis={availableKomis}
+            setFilters={setFilters}
+          />
         </div>
 
         <div className="flex-1 p-8 overflow-y-auto pb-24">

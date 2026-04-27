@@ -87,6 +87,7 @@ export interface GameData {
   rating_black: number[];
   tournament: number[];
   moves?: number[];
+  timertime?: number[];
   BotGame?: string[];
   date_formatted?: string[];
   rating_difference?: number[];
@@ -105,6 +106,7 @@ export interface TransformedGame {
   rating_black: number;
   tournament: string;
   moves: number;
+  time_control: number;
   BotGame: string;
   rating_difference: number;
 }
@@ -204,6 +206,7 @@ export function transformGamesData(rawGames: any[]): TransformedGame[] {
         rating_black: game.rating_black,
         tournament: game.tournament === 1 ? 'Tournament' : (game.tournament === 0 ? 'Normal' : game.tournament),
         moves: moves ?? 0,
+        time_control: game.timertime ?? 0,
         BotGame: getGameType(game.player_white, game.player_black),
         rating_difference: Math.abs(game.rating_white - game.rating_black),
       };

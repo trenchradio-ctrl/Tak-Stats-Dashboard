@@ -16,6 +16,7 @@ interface FilterProps {
     timeControlMax: number;
   };
   dateBounds: [number, number] | null;
+  availableKomis: number[];
   setFilters: React.Dispatch<React.SetStateAction<any>>;
 }
 
@@ -43,7 +44,62 @@ function fromDateInputValue(value: string, endOfDay = false): number {
   return date.getTime();
 }
 
-export default function Filters({ filters, dateBounds, setFilters }: FilterProps) {
+function clampRange(min: number, max: number, lowerBound: number, upperBound: number): [number, number] {
+  const safeMin = Number.isFinite(min) ? min : lowerBound;
+  const safeMax = Number.isFinite(max) ? max : upperBound;
+  const nextMin = Math.max(lowerBound, Math.min(safeMin, upperBound));
+  const nextMax = Math.max(nextMin, Math.min(safeMax, upperBound));
+  return [nextMin, nextMax];
+}
+
+function RangeNumberInputs({
+  min,
+  max,
+  step = 1,
+  bounds,
+  value,
+  onChange,
+}: {
+  min: string;
+  max: string;
+  step?: number;
+  bounds: [number, number];
+  value: [number, number];
+  onChange: (next: [number, number]) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <label className="block">
+        <span className="block text-xs text-gray-500 mb-1">Min</span>
+        <input
+          type="number"
+          min={bounds[0]}
+          max={value[1]}
+          step={step}
+          value={value[0]}
+          onChange={(e) => onChange(clampRange(Number(e.target.value), value[1], bounds[0], bounds[1]))}
+          className="w-full rounded bg-gray-900 border border-gray-700 px-2 py-1 text-sm text-gray-200"
+          aria-label={min}
+        />
+      </label>
+      <label className="block">
+        <span className="block text-xs text-gray-500 mb-1">Max</span>
+        <input
+          type="number"
+          min={value[0]}
+          max={bounds[1]}
+          step={step}
+          value={value[1]}
+          onChange={(e) => onChange(clampRange(value[0], Number(e.target.value), bounds[0], bounds[1]))}
+          className="w-full rounded bg-gray-900 border border-gray-700 px-2 py-1 text-sm text-gray-200"
+          aria-label={max}
+        />
+      </label>
+    </div>
+  );
+}
+
+export default function Filters({ filters, dateBounds, availableKomis, setFilters }: FilterProps) {
   const handleSizeToggle = (size: number) => {
     setFilters((prev: any) => ({
       ...prev,
@@ -71,10 +127,19 @@ export default function Filters({ filters, dateBounds, setFilters }: FilterProps
     }));
   };
 
-  const handleRatingDiffChange = (maxValue: number) => {
+  const handleKomiToggle = (komi: number) => {
     setFilters((prev: any) => ({
       ...prev,
-      ratingDiffRange: [0, maxValue],
+      komis: prev.komis.includes(komi)
+        ? prev.komis.filter((value: number) => value !== komi)
+        : [...prev.komis, komi],
+    }));
+  };
+
+  const handleRatingDiffChange = (min: number, max: number) => {
+    setFilters((prev: any) => ({
+      ...prev,
+      ratingDiffRange: [min, max],
     }));
   };
 
@@ -179,74 +244,67 @@ export default function Filters({ filters, dateBounds, setFilters }: FilterProps
         </div>
       </div>
 
+      {availableKomis.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-300 mb-3">Komi</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {availableKomis.map((komi) => (
+              <label key={komi} className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.komis.includes(komi)}
+                  onChange={() => handleKomiToggle(komi)}
+                  className="w-4 h-4 bg-gray-700 border-gray-600 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-300">{komi}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Rating Difference</h3>
-        <input
-          type="range"
-          min="0"
-          max="2500"
-          value={filters.ratingDiffRange[1]}
-          onChange={(e) => handleRatingDiffChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+        <RangeNumberInputs
+          min="Minimum rating difference"
+          max="Maximum rating difference"
+          bounds={[0, 3000]}
+          value={filters.ratingDiffRange}
+          onChange={([min, max]) => handleRatingDiffChange(min, max)}
         />
-        <div className="flex justify-between text-xs text-gray-500 mt-2">
-          <span>0</span>
-          <span>{filters.ratingDiffRange[1]}</span>
-        </div>
       </div>
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">White Player ELO</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{filters.whiteRatingRange[0]}</span>
-            <span>{filters.whiteRatingRange[1]}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="3000"
-            value={filters.whiteRatingRange[1]}
-            onChange={(e) => handleWhiteRatingChange(filters.whiteRatingRange[0], parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
+        <RangeNumberInputs
+          min="Minimum white player ELO"
+          max="Maximum white player ELO"
+          bounds={[0, 3000]}
+          value={filters.whiteRatingRange}
+          onChange={([min, max]) => handleWhiteRatingChange(min, max)}
+        />
       </div>
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Black Player ELO</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{filters.blackRatingRange[0]}</span>
-            <span>{filters.blackRatingRange[1]}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="3000"
-            value={filters.blackRatingRange[1]}
-            onChange={(e) => handleBlackRatingChange(filters.blackRatingRange[0], parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
+        <RangeNumberInputs
+          min="Minimum black player ELO"
+          max="Maximum black player ELO"
+          bounds={[0, 3000]}
+          value={filters.blackRatingRange}
+          onChange={([min, max]) => handleBlackRatingChange(min, max)}
+        />
       </div>
 
       <div>
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Time Controls</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{filters.timeControlMin}</span>
-            <span>{filters.timeControlMax}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="10000"
-            value={filters.timeControlMin}
-            onChange={(e) => handleTimeControlChange(parseInt(e.target.value), filters.timeControlMax)}
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-          />
-        </div>
+        <RangeNumberInputs
+          min="Minimum time control"
+          max="Maximum time control"
+          bounds={[0, 60000]}
+          value={[filters.timeControlMin, filters.timeControlMax]}
+          onChange={([min, max]) => handleTimeControlChange(min, max)}
+        />
       </div>
 
       <div>

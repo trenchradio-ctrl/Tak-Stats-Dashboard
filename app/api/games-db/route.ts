@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
       .map((column: any) => column.name);
     const hasNotation = columns.includes('notation');
     const hasMoves = columns.includes('moves');
+    const hasTimerTime = columns.includes('timertime');
 
     // Fetch games from the database - load all games (with optional pagination)
     const offset = request.nextUrl.searchParams.get('offset') || '0';
@@ -114,6 +115,7 @@ export async function GET(request: NextRequest) {
         tournament
         ${hasNotation ? ', notation' : ''}
         ${hasMoves ? ', moves' : ''}
+        ${hasTimerTime ? ', timertime' : ''}
       FROM games
       LIMIT ? OFFSET ?
     `

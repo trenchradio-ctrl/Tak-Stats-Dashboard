@@ -14,6 +14,7 @@ export interface GameRecord {
   rating_black: number;
   tournament: number;
   moves?: number;
+  timertime?: number;
 }
 
 export interface ApiGamesResponse {
