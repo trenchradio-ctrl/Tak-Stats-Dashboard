@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateBounds, setDateBounds] = useState<[number, number] | null>(null);
+  const [logoLoaded, setLogoLoaded] = useState(true);
 
   const [filters, setFilters] = useState({
     sizes: [] as number[],
@@ -218,14 +219,24 @@ export default function Dashboard() {
                   color="text-gray-300"
                 />
                 <div className="flex items-center justify-center">
-                  <img
-                    src="/playtak-logo.png"
-                    alt="PlayTak Logo"
-                    onError={(event) => {
-                      event.currentTarget.style.display = 'none';
-                    }}
-                    className="h-20 w-full max-w-40 object-contain"
-                  />
+                  <a
+                    href="https://playtak.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-20 w-full max-w-40 items-center justify-center text-sm font-semibold text-gray-200 hover:text-sky-300"
+                    aria-label="Open PlayTak"
+                  >
+                    {logoLoaded ? (
+                      <img
+                        src="/playtak-logo.png"
+                        alt="PlayTak Logo"
+                        onError={() => setLogoLoaded(false)}
+                        className="h-20 w-full object-contain"
+                      />
+                    ) : (
+                      <span>PlayTak</span>
+                    )}
+                  </a>
                 </div>
               </div>
 
