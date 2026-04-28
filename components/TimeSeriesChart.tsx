@@ -205,8 +205,12 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
   };
 
   return (
-    <div className="relative h-72 w-full md:h-96">
-      <Line data={chartData} options={options as any} />
+    <div className="relative h-72 w-full md:h-96 [&_canvas]:!h-full [&_canvas]:!w-full">
+      <Line
+        data={chartData}
+        options={options as any}
+        style={{ height: '100%', width: '100%' }}
+      />
     </div>
   );
 }
