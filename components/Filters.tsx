@@ -224,7 +224,6 @@ export default function Filters({ filters, dateBounds, availableKomis, setFilter
             </label>
           ))}
         </div>
-        <div className="mt-2 text-xs text-gray-500">ONLY</div>
       </div>
 
       <div>
