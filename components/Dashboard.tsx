@@ -186,7 +186,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 pb-12 md:p-8 md:pb-24">
+        <div className="min-w-0 flex-1 overflow-y-auto p-4 pb-12 md:p-8 md:pb-24">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -261,7 +261,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 md:p-6">
+              <div className="min-w-0 bg-gray-800 rounded-lg p-4 border border-gray-700 md:p-6">
                 <h2 className="text-lg font-semibold mb-4">Games Over Time</h2>
                 <TimeSeriesChart games={filteredGames} dateRange={filters.dateRange} />
               </div>

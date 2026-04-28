@@ -150,7 +150,7 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
 
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
@@ -205,7 +205,7 @@ export default function TimeSeriesChart({ games, dateRange }: TimeSeriesChartPro
   };
 
   return (
-    <div className="h-72 md:h-96">
+    <div className="relative h-72 w-full md:h-96">
       <Line data={chartData} options={options as any} />
     </div>
   );
